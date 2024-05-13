@@ -26,7 +26,7 @@ function searchTracks() {
                         <div class="p-4">
                             <h2 class="text-lg font-semibold text-white text-center">${track.title}</h2>
                             <p class="text-sm text-gray-400 text-center">${track.artist}</p>
-                            <button onclick="showTrackInfo('${track.url}')" class="mx-auto my-auto bg-green-500 hover:bg-green-600 text-center text-white font-bold py-2 px-4 rounded mt-2 flex">Dengarkan</button>
+                            <button onclick="showTrackInfo('${track.url}')" class="mx-auto my-auto bg-blue-500 hover:bg-green-600 text-center text-white font-bold py-2 px-4 rounded mt-2 flex">Dengarkan</button>
                         </div>
                     </div>
                 `;
@@ -53,17 +53,19 @@ function showTrackInfo(trackUrl) {
 
             modalTitle.textContent = data.title;
             modalContent.innerHTML = `
-            
-            <p class="text-center"><strong>Spotify Ivan<strong></p>
+                <p class="text-center"><strong>Spotify Ivan<strong></p>
                 <img src="${data.thumbnail}" alt="${data.title}" class="w-100 rounded">
                 <p><strong>Artist:</strong> ${data.artist}</p>
                 <p><strong>Album:</strong> ${data.album}</p>
+                <button id="favoriteButton" onclick="toggleFavorite('${trackUrl}')" class="btn btn-primary">${isTrackInFavorites(trackUrl) ? 'Remove from Favorites' : 'Add to Favorites'}</button>
                 <audio controls class="mx-auto mt-4">
                     <source src="https://spotifyapi.caliphdev.com/api/download/track?url=${trackUrl}" type="audio/mp3">
                     Your browser does not support the audio element.
                 </audio>
             `;
 
+            // Menambahkan kelas modal-dialog-scrollable agar konten modal dapat digulir jika terlalu panjang
+            $('#trackModal .modal-dialog').addClass('modal-dialog-centered modal-dialog-scrollable');
             $('#trackModal').modal('show');
         })
         .catch(error => {
@@ -82,4 +84,63 @@ document.getElementById("searchInput").addEventListener("keyup", function (event
         event.preventDefault();
         searchTracks();
     }
+});
+
+// Fungsi untuk memeriksa apakah suatu lagu ada di daftar favorit
+function isTrackInFavorites(trackUrl) {
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    return favorites.includes(trackUrl);
+}
+
+function toggleFavorite(trackUrl) {
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+    if (favorites.includes(trackUrl)) {
+        // Hapus lagu dari daftar favorit jika sudah ada
+        favorites = favorites.filter(url => url !== trackUrl);
+    } else {
+        // Tambahkan lagu ke daftar favorit jika belum ada
+        favorites.push(trackUrl);
+    }
+
+    // Simpan daftar favorit ke localStorage
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+
+    // Perbarui teks tombol favorit
+    const favoriteButton = document.getElementById('favoriteButton');
+    favoriteButton.textContent = isTrackInFavorites(trackUrl) ? 'Remove from Favorites' : 'Add to Favorites';
+
+    // Perbarui daftar favorit
+    loadFavorites();
+}
+
+// Fungsi untuk memuat daftar favorit saat halaman dimuat
+function loadFavorites() {
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    const favoritesListItems = document.getElementById('favoritesListItems');
+    favoritesListItems.innerHTML = '';
+
+    favorites.forEach(trackUrl => {
+        fetch(`https://spotifyapi.caliphdev.com/api/info/track?url=${trackUrl}`)
+            .then(response => response.json())
+            .then(data => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${data.title}</span>
+                        <div>
+                            <button onclick="showTrackInfo('${trackUrl}')" class="btn btn-primary me-2">Dengarkan</button>
+                            <button onclick="toggleFavorite('${trackUrl}')" class="btn btn-danger">Hapus</button>
+                        </div>
+                    </div>
+                `;
+                favoritesListItems.appendChild(listItem);
+            })
+            .catch(error => console.error('Error fetching track info for favorites:', error));
+    });
+}
+
+// Memuat daftar favorit saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function () {
+    loadFavorites();
 });
