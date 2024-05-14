@@ -26,7 +26,7 @@ function searchTracks() {
                         <div class="p-4">
                             <h2 class="text-lg font-semibold text-white text-center">${track.title}</h2>
                             <p class="text-sm text-gray-400 text-center">${track.artist}</p>
-                            <button onclick="showTrackInfo('${track.url}')" class="mx-auto my-auto bg-blue-500 hover:bg-green-600 text-center text-white font-bold py-2 px-4 rounded mt-2 flex">Dengarkan</button>
+                            <button onclick="showTrackInfo('${track.url}')" class="mx-auto my-auto bg-blue-500 hover:bg-green-600 text-center text-white font-bold py-2 px-4 rounded mt-2 flex"><i class="fa fa-play"></i></button>
                         </div>
                     </div>
                 `;
@@ -57,7 +57,7 @@ function showTrackInfo(trackUrl) {
                 <img src="${data.thumbnail}" alt="${data.title}" class="w-100 rounded">
                 <p><strong>Artist:</strong> ${data.artist}</p>
                 <p><strong>Album:</strong> ${data.album}</p>
-                <button id="favoriteButton" onclick="toggleFavorite('${trackUrl}')" class="btn btn-primary">${isTrackInFavorites(trackUrl) ? 'Remove from Favorites' : 'Add to Favorites'}</button>
+                <button id="favoriteButton" onclick="toggleFavorite('${trackUrl}')" class="btn btn-primary">${isTrackInFavorites(trackUrl) ? '<i class="fa fa-trash"></i> Hapus Dari Favorit' : '<i class="fa fa-star"></i> Tambah Ke Favorit'}</button>
                 <audio controls class="mx-auto mt-4">
                     <source src="https://spotifyapi.caliphdev.com/api/download/track?url=${trackUrl}" type="audio/mp3">
                     Your browser does not support the audio element.
@@ -107,8 +107,10 @@ function toggleFavorite(trackUrl) {
     localStorage.setItem('favorites', JSON.stringify(favorites));
 
     // Perbarui teks tombol favorit
-    const favoriteButton = document.getElementById('favoriteButton');
-    favoriteButton.textContent = isTrackInFavorites(trackUrl) ? 'Remove from Favorites' : 'Add to Favorites';
+const favoriteButton = document.getElementById('favoriteButton');
+favoriteButton.innerHTML = isTrackInFavorites(trackUrl) 
+    ? '<i class="fa fa-trash"></i> Hapus Dari Favorit' 
+    : '<i class="fa fa-star"></i> Tambah Ke Favorit';
 
     // Perbarui daftar favorit
     loadFavorites();
@@ -129,8 +131,8 @@ function loadFavorites() {
                     <div class="d-flex justify-content-between align-items-center">
                         <span>${data.title}</span>
                         <div>
-                            <button onclick="showTrackInfo('${trackUrl}')" class="btn btn-primary me-2">Dengarkan</button>
-                            <button onclick="toggleFavorite('${trackUrl}')" class="btn btn-danger">Hapus</button>
+                            <button onclick="showTrackInfo('${trackUrl}')" class="btn btn-primary me-2"><i class="fa fa-play"></i></button>
+                            <button onclick="toggleFavorite('${trackUrl}')" class="btn btn-danger"><i class="fa fa-trash"></i></button>
                         </div>
                     </div>
                 `;
